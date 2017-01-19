@@ -125,7 +125,7 @@ Describe System.Process.Job
         End
 
         It executes command with spaces (filename)
-          let args = ['type', s:Path.realpath(s:testdata . 't e s t.txt')]
+          let args = s:cmd + ['type', s:Path.realpath(s:testdata . 't e s t.txt')]
           let result = Process.execute(args, options)
           Assert Equals(result.success, 1)
           Assert Equals(result.status, 0)
@@ -135,7 +135,7 @@ Describe System.Process.Job
 
         if s:is_japanese_supported
           It executes command with non ascii characters without spaces (filename)
-            let args = ['type', s:Path.realpath(s:testdata . 'テスト.txt')]
+            let args = s:cmd + ['type', s:Path.realpath(s:testdata . 'テスト.txt')]
             let result = Process.execute(args, options)
             Assert Equals(result.success, 1)
             Assert Equals(result.status, 0)
@@ -144,7 +144,7 @@ Describe System.Process.Job
           End
 
           It executes command with non ascii characters with spaces (filename)
-            let args = ['type', s:Path.realpath(s:testdata . 'テ ス ト.txt')]
+            let args = s:cmd + ['type', s:Path.realpath(s:testdata . 'テ ス ト.txt')]
             let result = Process.execute(args, options)
             Assert Equals(result.success, 1)
             Assert Equals(result.status, 0)
