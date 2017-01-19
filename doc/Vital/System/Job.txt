@@ -3,7 +3,7 @@
 Version: 0.1.0-dev
 Author:  Alisue <lambdalisue@hashnote.net>
 License: MIT license
-Support: Vim 8.0.0134 and above
+Support: Vim 8.0.0027 and above
 Support: Neovim 0.1.7 and above
 
 
@@ -99,6 +99,7 @@ wait([{timeout}])
 	Wait until the process has terminated or {timeout} has passed.
 	The unit of {timeout} is milliseconds.
 	When user hit <C-c>, the process will terminate.
+	Note that Vim 8.0.0026 and earlier will freeze with this method.
 
 
 =============================================================================

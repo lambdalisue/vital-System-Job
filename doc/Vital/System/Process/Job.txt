@@ -1,6 +1,10 @@
 *vital/System/Process/Job.txt*	A Process client using job feature
 
-Maintainer: lambdalisue		<lambdalisue@hashnote.net>
+Version: 0.1.0-dev
+Author:  Alisue <lambdalisue@hashnote.net>
+License: MIT license
+Support: Vim 8.0.0027 and above
+Support: Neovim 0.1.7 and above
 
 =============================================================================
 CONTENTS			*Vital.System.Process.Job-contents*
@@ -25,7 +29,10 @@ is_available()
 	Returns 1 when
 
 	1. has('nvim') returns 1
-	2. exists('*job_start') returns 1
+	2. has('patch-8.0.0027') returns 1
+
+	Note that Vim 8.0.0026 and earlier has a bug and Vim will freeze when
+	this client is used.
 
 				*Vital.System.Process.Job.is_supported()*
 is_supported({options})
