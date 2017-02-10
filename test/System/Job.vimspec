@@ -3,18 +3,18 @@ Describe System.Job
     let Path = vital#vital#import('System.Filepath')
     let Job = vital#vital#import('System.Job')
     let root = Path.realpath('test/_testdata/System/Job')
-    let stream = { '_stdout': [], '_stderr': [], '_exitval': v:null }
+    let stream = { '_stdout': '', '_stderr': '', '_exitval': v:null }
     function! stream.on_stdout(job, msg, event) abort
       " job   -- job_id
       " msg   -- data buffered (List)
       " event -- 'stdout'
-      call extend(self._stdout, a:msg)
+      let self._stdout .= join(a:msg, "\n")
     endfunction
     function! stream.on_stderr(job, msg, event) abort
       " job   -- job_id
       " msg   -- data buffered (List)
       " event -- 'stderr'
-      call extend(self._stderr, a:msg)
+      let self._stderr .= join(a:msg, "\n")
     endfunction
     function! stream.on_exit(job, msg, event) abort
       " job   -- job_id
@@ -56,7 +56,7 @@ Describe System.Job
         let job = Job.start(args, options)
         let status = job.wait(5000)
         Assert Equals(status, 0)
-        Assert Equals(job._stdout, ['Hello World', ''])
+        Assert Equals(job._stdout, "Hello World\n")
       End
     End
 
@@ -68,7 +68,7 @@ Describe System.Job
         let job = Job.start(args, options)
         let status = job.wait(5000)
         Assert Equals(status, 0)
-        Assert Equals(job._stderr, ['Hello World', ''])
+        Assert Equals(job._stderr, "Hello World\n")
       End
     End
 
@@ -115,10 +115,9 @@ Describe System.Job
         call job.send("lambdalisue\n")
         call job.wait()
         Assert Equals(job.status(), 'dead')
-        Assert Equals(job._stdout, [
-              \ 'Please input your name: Hello lambdalisue',
-              \ '',
-              \])
+        Assert Equals(job._stdout,
+              \ "Please input your name: Hello lambdalisue\n",
+              \)
       End
     End
 
