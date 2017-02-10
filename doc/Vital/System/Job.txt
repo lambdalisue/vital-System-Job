@@ -75,6 +75,10 @@ start({args}[, {options}])
 =============================================================================
 INSTANCE					*Vital.System.Job-instance*
 
+					*Vital.System.Job-instance.id()*
+id()
+	Return an unique number of the process.
+
 					*Vital.System.Job-instance.status()*
 status()
 	Return a status of the process. The value is one of

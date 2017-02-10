@@ -95,6 +95,20 @@ Describe System.Job
   End
 
   Describe A job instance
+    Describe id()
+      It returns a unique number for individual process
+        let script = Path.join(root, 'infinity_loop.py')
+        let args = ['python', script]
+        let job1 = Job.start(args)
+        let job2 = Job.start(args)
+        Assert IsNumber(job1.id())
+        Assert IsNumber(job2.id())
+        Assert NotEqual(job1.id(), job2.id())
+        call job1.stop()
+        call job2.stop()
+      End
+    End
+
     Describe .status()
       It returns 'run' and 'dead' when the job alive or dead respectively
         let script = Path.join(root, 'infinity_loop.py')
