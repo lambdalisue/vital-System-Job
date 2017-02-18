@@ -70,44 +70,42 @@ else
     let job_options = {
           \ 'mode': 'raw',
           \ 'timeout': 10000,
+          \ 'out_cb': function('s:_on_msg_cb', ['stdout', job]),
+          \ 'err_cb': function('s:_on_msg_cb', ['stderr', job]),
+          \ 'exit_cb': function('s:_on_exit_cb', [job]),
           \}
-    if has_key(job, 'on_stdout')
-      let job_options.out_cb = function('s:_job_callback', ['stdout', job])
-    endif
-    if has_key(job, 'on_stderr')
-      let job_options.err_cb = function('s:_job_callback', ['stderr', job])
-    endif
-    if has_key(job, 'on_exit')
-      let job_options.exit_cb = function('s:_job_callback', ['exit', job])
-    endif
     let job.__job = job_start(a:args, job_options)
     let job.__channel = job_getchannel(job.__job)
     let job.args = a:args
     return job
   endfunction
 
-  function! s:_job_callback(event, options, channel, ...) abort
-    let raw = get(a:000, 0, '')
-    let msg = type(raw) == v:t_string ? split(raw, '\r\?\n', 1) : raw
-    call call(
-          \ a:options['on_' . a:event],
-          \ [a:channel, msg, a:event],
-          \ a:options
-          \)
+  function! s:_on_msg_cb(name, job, channel, msg) abort
+    let cb_name = 'on_' . a:name
+    if has_key(a:job, cb_name)
+      call call(a:job[cb_name], [a:channel, split(a:msg, '\r\?\n', 1), a:name])
+    endif
   endfunction
 
-  function! s:_ch_read_and_call_callbacks(job, name, ...) abort
-    let options = get(a:000, 0, {})
-    let status = ch_status(a:job.__channel, options)
+  function! s:_on_exit_cb(job, job8, exitval) abort
+    " There might be data remain so read channel and call corresponding
+    " callbacks to mimic 'on_exit' of Neovim
+    call s:_read_channel_and_call_callback(a:job, 'stdout', {})
+    call s:_read_channel_and_call_callback(a:job, 'stderr', {'part': 'err'})
+    if has_key(a:job, 'on_exit')
+      call call(a:job.on_exit, [a:job8, a:exitval, 'exit'])
+    endif
+  endfunction
+
+  function! s:_read_channel_and_call_callback(job, name, options) abort
+    let status = ch_status(a:job.__channel, a:options)
     while status ==# 'open' || status ==# 'buffered'
       if status ==# 'buffered'
-        call s:_job_callback(
-              \ a:name, a:job, a:job.__job,
-              \ ch_read(a:job.__channel, options)
-              \)
+        let msg = ch_read(a:job.__channel, a:options)
+        call s:_on_msg_cb(a:name, a:job, a:job.__channel, msg)
       endif
       sleep 1m
-      let status = ch_status(a:job.__channel, options)
+      let status = ch_status(a:job.__channel, a:options)
     endwhile
   endfunction
 
@@ -147,12 +145,6 @@ else
         if status ==# 'fail'
           return -3
         elseif status ==# 'dead'
-          if has_key(self, 'on_stdout')
-            call s:_ch_read_and_call_callbacks(self, 'stdout')
-          endif
-          if has_key(self, 'on_stderr')
-            call s:_ch_read_and_call_callbacks(self, 'stderr', {'part': 'err'})
-          endif
           let info = job_info(self.__job)
           return info.exitval
         endif

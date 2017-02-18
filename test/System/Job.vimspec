@@ -21,6 +21,8 @@ Describe System.Job
       " msg   -- exit status
       " event -- 'exit'
       let self._exitval = a:msg
+      let self._stdout_on_exit = copy(self._stdout)
+      let self._stderr_on_exit = copy(self._stderr)
     endfunction
   End
 
@@ -90,6 +92,24 @@ Describe System.Job
         let job = Job.start(args, options)
         Assert Equals(job.wait(), 2)
         Assert Equals(job._exitval, 2)
+      End
+
+      It is called when there is no buffered data
+        " NOTE:
+        " Vim 8 call 'exit_cb' even there is buffered data remain.
+        " Without reading channel on 'exit_cb', this test should fail on Vim 8
+        " if the {repeat} is large enough (depends on PC's spec I guess)
+        let nrepeat = 1000000
+        let options = deepcopy(stream)
+        let script = Path.join(root, 'mass.py')
+        let args = ['python', script, nrepeat]
+        let job = Job.start(args, options)
+        Assert Equals(job.wait(), 0)
+        Assert Equals(job._exitval, 0)
+        Assert Equals(len(split(job._stdout, '\n')), nrepeat)
+        Assert Equals(len(split(job._stderr, '\n')), nrepeat)
+        Assert Equals(len(split(job._stdout_on_exit, '\n')), nrepeat)
+        Assert Equals(len(split(job._stderr_on_exit, '\n')), nrepeat)
       End
     End
   End
