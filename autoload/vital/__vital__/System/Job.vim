@@ -1,5 +1,6 @@
 let s:t_list = type([])
 
+
 " NOTE:
 " Attributes of {options} dictionary start from double underscore (__) are
 " used internally so no custom attributes shall start from that.
@@ -124,8 +125,15 @@ else
     return status ==# 'fail' ? 'dead' : status
   endfunction
 
+  " NOTE:
+  " A Null character (\0) is used as a terminator of a string in Vim.
+  " Neovim can send \0 by using \n splitted list but in Vim.
+  " So replace all \n in \n splitted list to ''
   function! s:job.send(data) abort
-    return ch_sendraw(self.__channel, a:data)
+    let data = type(a:data) == s:t_list
+          \ ? join(map(a:data, 'substitute(v:val, "\n", '''', ''g'')'), "\n")
+          \ : a:data
+    return ch_sendraw(self.__channel, data)
   endfunction
 
   function! s:job.stop() abort

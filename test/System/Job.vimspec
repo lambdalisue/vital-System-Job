@@ -153,6 +153,36 @@ Describe System.Job
               \ "Please input your name: Hello lambdalisue\n",
               \)
       End
+
+      It sends {data} (List) to the job process
+        let options = deepcopy(stream)
+        let script = Path.join(root, 'read.py')
+        let args = ['python', script]
+        let job = Job.start(args, options)
+
+        call job.send(['abc', "123\n456", ''])
+        call job.send(['.', ''])
+        call job.wait()
+        Assert Equals(job.status(), 'dead')
+        if has('nvim')
+            Assert Equals(job._stdout, join([
+                \ 'read:',
+                \ 'abc',
+                \ '123<NUL>456',
+                \ '',
+                \ '',
+                \], "\n"))
+        else
+            " Vim cannot send \0
+            Assert Equals(job._stdout, join([
+                \ 'read:',
+                \ 'abc',
+                \ '123456',
+                \ '',
+                \ '',
+                \], "\n"))
+        endif
+      End
     End
 
     Describe .stop()
