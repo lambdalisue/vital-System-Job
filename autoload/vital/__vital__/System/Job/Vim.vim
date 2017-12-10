@@ -96,7 +96,7 @@ function! s:channel.read() abort
   let buffered = self.__buffered
   if !empty(buffered)
     return remove(buffered, 0, -1)
-  elseif ch_canread(channel) && ch_status(channel, options) =~# '^\%(open\|buffered\)$'
+  elseif ch_status(channel, options) =~# '^\%(open\|buffered\)$'
     return split(ch_read(channel, extend({'timeout': 0}, options)), s:newline, 1)
   endif
   return v:null
