@@ -6,7 +6,7 @@ let s:STDERR = {'part': 'err'}
 
 
 function! s:is_available() abort
-  return has('patch-8.0.0027') && !has('nvim')
+  return has('patch-8.0.0105') && !has('nvim')
 endfunction
 
 function! s:start(cmd, ...) abort
@@ -96,7 +96,7 @@ function! s:channel.read() abort
   let buffered = self.__buffered
   if !empty(buffered)
     return remove(buffered, 0, -1)
-  elseif ch_status(channel, options) =~# '^\%(open\|buffered\)$'
+  elseif ch_canread(channel) && ch_status(channel, options) =~# '^\%(open\|buffered\)$'
     return split(ch_read(channel, extend({'timeout': 0}, options)), s:newline, 1)
   endif
   return v:null
