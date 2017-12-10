@@ -4,7 +4,7 @@ Version: 0.1.0-dev
 Author:  Alisue <lambdalisue@hashnote.net>
 License: MIT license
 Support: Vim 8.0.0027 and above
-Support: Neovim 0.1.7 and above
+Support: Neovim 0.2.0 and above
 
 
 =============================================================================
@@ -13,6 +13,8 @@ CONTENTS					*Vital.System.Job-contents*
 INTRODUCTION				|Vital.System.Job-introduction|
 FUNCTION				|Vital.System.Job-function|
 INSTANCE				|Vital.System.Job-instance|
+CHANNEL					|Vital.System.Job-channel|
+CALLBACK				|Vital.System.Job-callback|
 
 
 =============================================================================
@@ -21,6 +23,30 @@ INTRODUCTION					*Vital.System.Job-introduction*
 *Vital.System.Job* is a wrapper module of job feature which has introduced
 from Vim 8 or Neovim.
 
+=============================================================================
+USAGE						*Vital.System.Job-usage*
+
+The following code start "git status" and store its' stdout/stderr output in
+the instance attribute.
+>
+	" With channel
+	let job = s:Job.start(['git', 'status'])
+	echo job.stdout.read()
+	" ['foo', 'bar']
+	echo job.stderr.read()
+	" ['foo', 'bar']
+
+	" With callback
+	function! s:on_receive(job, data, event) abort
+	  for line in a:data
+	    echomsg a:event . ':' . line
+	  endfor
+	endfunction
+	let job = s:Job.start(['git', 'status'], {
+	      \ 'on_stdout': function('s:on_receive'),
+	      \ 'on_stderr': function('s:on_receive'),
+	      \ })
+<
 
 =============================================================================
 FUNCTION					*Vital.System.Job-function*
@@ -29,48 +55,40 @@ FUNCTION					*Vital.System.Job-function*
 start({args}[, {options}])
 	Start a new process with job feature of Vim 8 or Neovim and return a
 	job instance (|Vital.System.Job-instance|).
-	It throws exceptions when {args} is not a |List| instance, an empty
-	list, or the first item of {args} is not executable.
+
+	Warning: Double underscore (__) attributes in {options} are used
+	internally so users should NOT define such attributes on {options}.
 
 	The following attributes are allowed in {options}.
 
-	"on_stdout"	A callback called when the process output to stdout.
-			The {msg} is a stdout data |List|.
-	"on_stderr"	A callback called when the process output to stderr.
-			The {msg} is a stderr data |List|.
+	"on_stdout"	A method to deal the stdout. One of the following
+			may be specified.
+
+			1) "pipe" (See |Vital.System.Job-channel|)
+			2) A function (See |Vital.System.Job-callback|)
+			3) |v:null|
+
+			The default value is "pipe" and it automatically add
+			"stdout" attribute to the job instance.
+
+	"on_stderr"	A method to deal the stderr. One of the following
+			may be specified.
+
+			1) "pipe" (See |Vital.System.Job-channel|)
+			2) A function (See |Vital.System.Job-callback|)
+			3) |v:null|
+
+			The default value is "pipe" and it automatically add
+			"stderr" attribute to the job instance.
+
 	"on_exit"	A callback called when the process terminated.
-			The {msg} is an exit status.
+			See |Vital.System.Job-callback|.
 
-	Note that double underscore (__) attributes in {options} are used
-	internally so users should NOT define such attributes on {options}.
+	Note that all attributes in the {options} is exposed to the job
+	instance and users can access that in callbacks by |self| while the
+	callbacks above are called as a dictionary function of the job
+	instance.
 
-	For example:
->
-	function! s:on_stdout(job, msg, event) abort dict
-	  let leading = get(self.stdout, -1, '')
-	  silent! call remove(self.stdout, -1)
-	  call extend(self.stdout, [leading . get(a:msg, 0, '')] + a:msg[1:])
-	endfunction
-
-	function! s:on_stderr(job, msg, event) abort dict
-	  let leading = get(self.stderr, -1, '')
-	  silent! call remove(self.stderr, -1)
-	  call extend(self.stderr, [leading . get(a:msg, 0, '')] + a:msg[1:])
-	endfunction
-
-	function! s:on_exit(job, msg, event) abort dict
-	  let self.exit_status = a:msg
-	endfunction
-
-	let job = s:Job.start(['git', 'status'], {
-	      \ 'stdout': [],
-	      \ 'stderr': [],
-	      \ 'exit_status': -1,
-	      \ 'on_stdout': function('on_stdout'),
-	      \ 'on_stderr': function('on_stderr'),
-	      \ 'on_exit': function('on_exit'),
-	      \})
-<
 
 =============================================================================
 INSTANCE					*Vital.System.Job-instance*
@@ -92,8 +110,18 @@ status()
 
 					*Vital.System.Job-instance.send()*
 send({data})
-	Send {data} to the process.
-
+	Send {data} to the process. The {data} may be a string or a list.
+	When {data} is a list, it is assumed as a newline separated list and
+	all newline character in each item is replaced to "" in Vim and "\0"
+	in Neovim.
+	Note that no extra newline is appended to the {data}, mean that users
+	may need to add by themselves.
+>
+	call job.send('abc' . "\n")
+	" -> send: abc\n
+	call job.send(['abc', '123\n456', ''])
+	" -> send: abc\n123\045\n (Vim: abc\n123456\n)
+<
 					*Vital.System.Job-instance.stop()*
 stop()
 	Send STOP single to terminate the process.
@@ -103,8 +131,58 @@ wait([{timeout}])
 	Wait until the process has terminated or {timeout} has passed.
 	The unit of {timeout} is milliseconds.
 	When user hit <C-c>, the process will terminate.
-	Note that Vim 8.0.0026 and earlier will freeze with this method.
 
+	Warning: Vim 8.0.0026 and earlier is not supported and will throws
+	an exception when this method has called.
+
+
+=============================================================================
+CHANNEL						*Vital.System.Job-channel*
+
+When "on_stdout" or "on_stderr" of {options} is specified to "pipe", extra
+attributes "stdout" or "stderr" is added to the job instance.
+
+The "stdout" or "stderr" attribute is called a channel which provides the way
+to access a buffered data (note that this is not equal to a Vim's channel
+feature.)
+
+The channel instance has a following method.
+
+					*Vital.System.Job-channel.read()*
+read()
+	It returns a buffered newline separated list.
+	Note that it returns a current data even without newline so you may
+	need the following code to deal the newline. 
+>
+	let data = ['']
+	while job.status() ==# 'run'
+	  let _data = job.stdout.read()
+	  let data[-1] .= _data[0]
+	  call extend(data, _data[1:])
+	  sleep 100m
+	endwhile
+	  
+=============================================================================
+CALLBACK					*Vital.System.Job-callback*
+
+When "on_stdout", "on_stderr", or "on_exit" of {options} is a function, it is
+called when
+
+	"on_stdout"	Everytime the job receives stdout data
+	"on_stderr"	Everytime the job receives stderr data
+	"on_exit"	When the job terminate
+
+With
+	1st argument	A raw job instance. In Vim, it is a job instance and
+			in Neovim, it is a job id.
+
+	2nd argument	"on_stdout" or "on_stderr"
+			A newline separated data.
+
+			"on_exit"
+			An exit code
+
+	3rd argument	An event name (e.g. "stdout")
 
 =============================================================================
 vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl
