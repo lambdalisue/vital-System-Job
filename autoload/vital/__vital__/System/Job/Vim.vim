@@ -6,7 +6,7 @@ let s:STDERR = {'part': 'err'}
 
 
 function! s:is_available() abort
-  return has('patch-8.0.0105') && !has('nvim')
+  return has('patch-8.0.0107') && !has('nvim')
 endfunction
 
 function! s:start(cmd, ...) abort
