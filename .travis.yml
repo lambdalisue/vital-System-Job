@@ -38,7 +38,7 @@ before_script:
 
 script:
   - vint autoload/
-  - docker run --rm --volume ${PWD}:/mnt/volume -it lambdalisue/${VIM}-themis:${TAG} -e "PROFILE=${PROFILE}" --runtimepath vital.vim
+  - docker run --rm --volume ${PWD}:/mnt/volume -e "PROFILE=${PROFILE}" -it lambdalisue/${VIM}-themis:${TAG} --runtimepath vital.vim
   - docker run --rm --volume ${PWD}:/mnt/volume -it lambdalisue/${VIM}-ci:${TAG} --cmd "try | helptags doc/ | catch | cquit | endtry" --cmd quit
 
 after_success:
