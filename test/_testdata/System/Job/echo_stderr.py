@@ -1,3 +1,22 @@
 import sys
+import time
 
-sys.stderr.write('Hello World\n')
+sys.stderr.write('Hello')
+sys.stderr.flush()
+time.sleep(0.1)
+sys.stderr.write(' World')
+sys.stderr.flush()
+time.sleep(0.1)
+sys.stderr.write("\n")
+sys.stderr.flush()
+time.sleep(0.1)
+sys.stderr.write('Hello')
+sys.stderr.flush()
+time.sleep(0.1)
+sys.stderr.write(' World')
+sys.stderr.flush()
+time.sleep(0.1)
+sys.stderr.write("\n")
+sys.stderr.flush()
+time.sleep(0.1)
+sys.stderr.write('This is not line')

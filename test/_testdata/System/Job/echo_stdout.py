@@ -1,1 +1,22 @@
-print('Hello World')
+import sys
+import time
+
+sys.stdout.write('Hello')
+sys.stdout.flush()
+time.sleep(0.1)
+sys.stdout.write(' World')
+sys.stdout.flush()
+time.sleep(0.1)
+sys.stdout.write("\n")
+sys.stdout.flush()
+time.sleep(0.1)
+sys.stdout.write('Hello')
+sys.stdout.flush()
+time.sleep(0.1)
+sys.stdout.write(' World')
+sys.stdout.flush()
+time.sleep(0.1)
+sys.stdout.write("\n")
+sys.stdout.flush()
+time.sleep(0.1)
+sys.stdout.write('This is not line')
