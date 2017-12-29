@@ -1,4 +1,5 @@
-let s:newline = has('win32') || has('win64') ? "\r\n" : "\n"
+let s:is_windows = has('win32') || has('win64')
+let s:newline = s:is_windows ? "\r\n" : "\n"
 
 Describe System.Job
   Before all
@@ -70,11 +71,17 @@ Describe System.Job
         let job = Job.start(['python', path, 'stdout', 'lf'], options)
         let exitcode = job.wait(5000)
         Assert Equals(exitcode, 0)
-        Assert Equals(job._stdout, [
-              \ 'Hello World',
-              \ 'Hello World',
-              \ 'This is not line',
-              \])
+        if s:is_windows
+          Assert Equals(job._stdout, [
+                \ "Hello World\nHello World\nThis is not line",
+                \])
+        else
+          Assert Equals(job._stdout, [
+                \ 'Hello World',
+                \ 'Hello World',
+                \ 'This is not line',
+                \])
+        endif
       End
 
       It is called with raw {data} (CRLF)
@@ -82,11 +89,19 @@ Describe System.Job
         let job = Job.start(['python', path, 'stdout', 'crlf'], options)
         let exitcode = job.wait(5000)
         Assert Equals(exitcode, 0)
-        Assert Equals(job._stdout, [
-              \ "Hello World\r",
-              \ "Hello World\r",
-              \ 'This is not line',
-              \])
+        if s:is_windows
+          Assert Equals(job._stdout, [
+                \ "Hello World",
+                \ "Hello World",
+                \ 'This is not line',
+                \])
+        else
+          Assert Equals(job._stdout, [
+                \ "Hello World\r",
+                \ "Hello World\r",
+                \ 'This is not line',
+                \])
+        endif
       End
     End
 
@@ -118,11 +133,17 @@ Describe System.Job
         let job = Job.start(['python', path, 'stderr', 'lf'], options)
         let exitcode = job.wait(5000)
         Assert Equals(exitcode, 0)
-        Assert Equals(job._stderr, [
-              \ 'Hello World',
-              \ 'Hello World',
-              \ 'This is not line',
-              \])
+        if s:is_windows
+          Assert Equals(job._stderr, [
+                \ "Hello World\nHello World\nThis is not line",
+                \])
+        else
+          Assert Equals(job._stderr, [
+                \ 'Hello World',
+                \ 'Hello World',
+                \ 'This is not line',
+                \])
+        endif
       End
 
       It is called with raw {data} (CRLF)
@@ -130,11 +151,19 @@ Describe System.Job
         let job = Job.start(['python', path, 'stderr', 'crlf'], options)
         let exitcode = job.wait(5000)
         Assert Equals(exitcode, 0)
-        Assert Equals(job._stderr, [
-              \ "Hello World\r",
-              \ "Hello World\r",
-              \ 'This is not line',
-              \])
+        if s:is_windows
+          Assert Equals(job._stderr, [
+                \ 'Hello World',
+                \ 'Hello World',
+                \ 'This is not line',
+                \])
+        else
+          Assert Equals(job._stderr, [
+                \ "Hello World\r",
+                \ "Hello World\r",
+                \ 'This is not line',
+                \])
+        endif
       End
     End
 
