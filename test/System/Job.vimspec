@@ -284,7 +284,7 @@ Describe System.Job
         Assert Equals(status, -1)
         Assert Equals(job.status(), 'run')
         Assert Compare(reltimefloat(delta), '>', 0.01)
-        Assert Compare(reltimefloat(delta), '<', 0.02)
+        Assert Compare(reltimefloat(delta), '<', 0.05)
         " Kill the process
         call job.stop()
         " Wait 1 sec to make sure the process termination
