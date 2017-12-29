@@ -54,14 +54,20 @@ endfunction
 function! s:_close_cb(job, channel) abort
   if has_key(a:job, 'on_stdout')
     let options = {'part': 'out'}
+    let l:Out_cb = get(a:job, 'stdout_mode', 'nl') ==# 'nl'
+          \ ? function('s:_out_cb_nl')
+          \ : function('s:_out_cb_raw')
     while ch_status(a:channel, options) ==# 'buffered'
-      call s:_out_cb(a:job, a:channel, ch_readraw(a:channel, options))
+      call Out_cb(a:job, a:channel, ch_readraw(a:channel, options))
     endwhile
   endif
   if has_key(a:job, 'on_stderr')
     let options = {'part': 'err'}
+    let l:Err_cb = get(a:job, 'stderr_mode', 'nl') ==# 'nl'
+          \ ? function('s:_err_cb_nl')
+          \ : function('s:_err_cb_raw')
     while ch_status(a:channel, options) ==# 'buffered'
-      call s:_err_cb(a:job, a:channel, ch_readraw(a:channel, options))
+      call Err_cb(a:job, a:channel, ch_readraw(a:channel, options))
     endwhile
   endif
 endfunction
