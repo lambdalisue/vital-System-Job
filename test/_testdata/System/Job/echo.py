@@ -1,52 +1,37 @@
+#!/usr/bin/env python3
 import sys
 import time
 
 # To prevent 'universal newline' in Windows.
 # Open a new stdout/stderr with newline='\n'
 if sys.argv[1] == 'stdout':
-    fo = open(
-        sys.__stdout__.fileno(),
-        sys.__stdout__.mode,
-        buffering=1,
-        encoding=sys.__stdout__.encoding,
-        errors=sys.__stdout__.errors,
-        newline='\n',
-        closefd=False,
-    )
+    fo = sys.stdout.buffer
 else:
-    fo = open(
-        sys.__stderr__.fileno(),
-        sys.__stderr__.mode,
-        buffering=1,
-        encoding=sys.__stderr__.encoding,
-        errors=sys.__stderr__.errors,
-        newline='\n',
-        closefd=False,
-    )
+    fo = sys.stderr.buffer
 
 if sys.argv[2] == 'cr':
-    newline = "\r"
+    newline = b"\r"
 elif sys.argv[2] == 'lf':
-    newline = "\n"
+    newline = b"\n"
 else:
-    newline = "\r\n"
+    newline = b"\r\n"
 
-fo.write('Hello')
+fo.write(b'Hello')
 fo.flush()
 time.sleep(0.1)
-fo.write(' World')
-fo.flush()
-time.sleep(0.1)
-fo.write(newline)
-fo.flush()
-time.sleep(0.1)
-fo.write('Hello')
-fo.flush()
-time.sleep(0.1)
-fo.write(' World')
+fo.write(b' World')
 fo.flush()
 time.sleep(0.1)
 fo.write(newline)
 fo.flush()
 time.sleep(0.1)
-fo.write('This is not line')
+fo.write(b'Hello')
+fo.flush()
+time.sleep(0.1)
+fo.write(b' World')
+fo.flush()
+time.sleep(0.1)
+fo.write(newline)
+fo.flush()
+time.sleep(0.1)
+fo.write(b'This is not line')
