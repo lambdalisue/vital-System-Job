@@ -1,8 +1,3 @@
-" NOTE:
-" '\r\?\n' is really slow so use '\n' or '\r\n' directly for split()
-" https://gist.github.com/lambdalisue/52a7b5aca3361f80d129a829d3b5987a
-let s:newline = has('win32') || has('win64') ? '\r\n' : '\n'
-
 function! s:is_available() abort
   return !has('nvim') && has('patch-8.0.0027')
 endfunction
@@ -35,23 +30,23 @@ function! s:start(args, options) abort
 endfunction
 
 function! s:_out_cb(job, channel, msg) abort
-  call a:job.on_stdout(split(a:msg, s:newline, 1))
+  call a:job.on_stdout(split(a:msg, '\n', 1))
 endfunction
 
 function! s:_err_cb(job, channel, msg) abort
-  call a:job.on_stderr(split(a:msg, s:newline, 1))
+  call a:job.on_stderr(split(a:msg, '\n', 1))
 endfunction
 
 function! s:_close_cb(job, channel) abort
   if has_key(a:job, 'on_stdout')
     let options = {'part': 'out'}
-    while ch_canread(a:channel) && ch_status(a:channel, options) ==# 'buffered'
+    while ch_status(a:channel, options) ==# 'buffered'
       call s:_out_cb(a:job, a:channel, ch_readraw(a:channel, options))
     endwhile
   endif
   if has_key(a:job, 'on_stderr')
     let options = {'part': 'err'}
-    while ch_canread(a:channel) && ch_status(a:channel, options) ==# 'buffered'
+    while ch_status(a:channel, options) ==# 'buffered'
       call s:_err_cb(a:job, a:channel, ch_readraw(a:channel, options))
     endwhile
   endif
