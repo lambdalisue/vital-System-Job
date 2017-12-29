@@ -19,7 +19,7 @@ Describe System.Job
   End
 
   Describe .start({cmd}[, {options}])
-    It starts a job with {cmd} (List) and return a job instance
+    It starts a job with {cmd} and return a job instance
       let path = Path.join(root, 'echo_stdout.py')
       let job = Job.start(['python', path])
       Assert KeyExists(job, 'status')
@@ -55,14 +55,36 @@ Describe System.Job
               \}
       End
 
-      It is called with raw {data}
-        let path = Path.join(root, 'echo_stdout.py')
-        let job = Job.start(['python', path], options)
+      It is called with raw {data} (CR)
+        let path = Path.join(root, 'echo.py')
+        let job = Job.start(['python', path, 'stdout', 'cr'], options)
+        let exitcode = job.wait(5000)
+        Assert Equals(exitcode, 0)
+        Assert Equals(job._stdout, [
+              \ "Hello World\rHello World\rThis is not line",
+              \])
+      End
+
+      It is called with raw {data} (LF)
+        let path = Path.join(root, 'echo.py')
+        let job = Job.start(['python', path, 'stdout', 'lf'], options)
         let exitcode = job.wait(5000)
         Assert Equals(exitcode, 0)
         Assert Equals(job._stdout, [
               \ 'Hello World',
               \ 'Hello World',
+              \ 'This is not line',
+              \])
+      End
+
+      It is called with raw {data} (CRLF)
+        let path = Path.join(root, 'echo.py')
+        let job = Job.start(['python', path, 'stdout', 'crlf'], options)
+        let exitcode = job.wait(5000)
+        Assert Equals(exitcode, 0)
+        Assert Equals(job._stdout, [
+              \ "Hello World\r",
+              \ "Hello World\r",
               \ 'This is not line',
               \])
       End
@@ -81,14 +103,36 @@ Describe System.Job
               \}
       End
 
-      It is called with raw {data}
-        let path = Path.join(root, 'echo_stderr.py')
-        let job = Job.start(['python', path], options)
+      It is called with raw {data} (CR)
+        let path = Path.join(root, 'echo.py')
+        let job = Job.start(['python', path, 'stderr', 'cr'], options)
+        let exitcode = job.wait(5000)
+        Assert Equals(exitcode, 0)
+        Assert Equals(job._stderr, [
+              \ "Hello World\rHello World\rThis is not line",
+              \])
+      End
+
+      It is called with raw {data} (LF)
+        let path = Path.join(root, 'echo.py')
+        let job = Job.start(['python', path, 'stderr', 'lf'], options)
         let exitcode = job.wait(5000)
         Assert Equals(exitcode, 0)
         Assert Equals(job._stderr, [
               \ 'Hello World',
               \ 'Hello World',
+              \ 'This is not line',
+              \])
+      End
+
+      It is called with raw {data} (CRLF)
+        let path = Path.join(root, 'echo.py')
+        let job = Job.start(['python', path, 'stderr', 'crlf'], options)
+        let exitcode = job.wait(5000)
+        Assert Equals(exitcode, 0)
+        Assert Equals(job._stderr, [
+              \ "Hello World\r",
+              \ "Hello World\r",
               \ 'This is not line',
               \])
       End
