@@ -191,8 +191,7 @@ Describe System.Job
         let job = Job.start([python, path])
         Assert Equals(job.status(), 'run')
         call job.stop()
-        " Wait 1 sec to make sure the process termination
-        sleep 1
+        call job.wait()
         Assert Equals(job.status(), 'dead')
       End
     End
