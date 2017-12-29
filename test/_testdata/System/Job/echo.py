@@ -1,17 +1,28 @@
 import sys
 import time
 
-# Do not add \r even in Windows
-if sys.platform.startswith('win'):
-    import os
-    import msvcrt
-    msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
-    msvcrt.setmode(sys.stderr.fileno(), os.O_BINARY)
-
+# To prevent 'universal newline' in Windows.
+# Open a new stdout/stderr with newline='\n'
 if sys.argv[1] == 'stdout':
-    fo = sys.stdout
+    fo = open(
+        sys.__stdout__.fileno(),
+        sys.__stdout__.mode,
+        buffering=1,
+        encoding=sys.__stdout__.encoding,
+        errors=sys.__stdout__.errors,
+        newline='\n',
+        closefd=False,
+    )
 else:
-    fo = sys.stderr
+    fo = open(
+        sys.__stderr__.fileno(),
+        sys.__stderr__.mode,
+        buffering=1,
+        encoding=sys.__stderr__.encoding,
+        errors=sys.__stderr__.errors,
+        newline='\n',
+        closefd=False,
+    )
 
 if sys.argv[2] == 'cr':
     newline = "\r"
