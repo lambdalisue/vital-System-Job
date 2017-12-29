@@ -1,15 +1,11 @@
-let s:is_windows = has('win32') || has('win64')
-let s:newline = s:is_windows ? "\r\n" : "\n"
-
 Describe System.Job
   Before all
     let Job = vital#vital#import('System.Job')
     let Path = vital#vital#import('System.Filepath')
     let root = Path.realpath('test/_testdata/System/Job')
-    let newline = s:newline
 
     function! Lines(...) abort
-      return join(a:000, s:newline)
+      return join(a:000, "\n")
     endfunction
   End
 
@@ -66,57 +62,29 @@ Describe System.Job
               \])
       End
 
-      if s:is_windows
-        It is called with raw {data} on Windows (LF)
-          let path = Path.join(root, 'echo.py')
-          let job = Job.start(['python', path, 'stdout', 'lf'], options)
-          let exitcode = job.wait(5000)
-          Assert Equals(exitcode, 0)
-          Assert Equals(job._stdout, [
-                \ "Hello World\r",
-                \ "Hello World\r",
-                \ 'This is not line',
-                \])
-        End
-      else
-        It is called with raw {data} on Unix (LF)
-          let path = Path.join(root, 'echo.py')
-          let job = Job.start(['python', path, 'stdout', 'lf'], options)
-          let exitcode = job.wait(5000)
-          Assert Equals(exitcode, 0)
-          Assert Equals(job._stdout, [
-                \ 'Hello World',
-                \ 'Hello World',
-                \ 'This is not line',
-                \])
-        End
-      endif
+      It is called with raw {data} (LF)
+        let path = Path.join(root, 'echo.py')
+        let job = Job.start(['python', path, 'stdout', 'lf'], options)
+        let exitcode = job.wait(5000)
+        Assert Equals(exitcode, 0)
+        Assert Equals(job._stdout, [
+              \ 'Hello World',
+              \ 'Hello World',
+              \ 'This is not line',
+              \])
+      End
 
-      if s:is_windows
-        It is called with raw {data} (CRLF)
-          let path = Path.join(root, 'echo.py')
-          let job = Job.start(['python', path, 'stdout', 'crlf'], options)
-          let exitcode = job.wait(5000)
-          Assert Equals(exitcode, 0)
-          Assert Equals(job._stdout, [
-                \ "Hello World\r",
-                \ "Hello World\r",
-                \ 'This is not line',
-                \])
-        End
-      else
-        It is called with raw {data} on Unix (CRLF)
-          let path = Path.join(root, 'echo.py')
-          let job = Job.start(['python', path, 'stdout', 'crlf'], options)
-          let exitcode = job.wait(5000)
-          Assert Equals(exitcode, 0)
-          Assert Equals(job._stdout, [
-                \ "Hello World\r",
-                \ "Hello World\r",
-                \ 'This is not line',
-                \])
-        End
-      endif
+      It is called with raw {data} (CRLF)
+        let path = Path.join(root, 'echo.py')
+        let job = Job.start(['python', path, 'stdout', 'crlf'], options)
+        let exitcode = job.wait(5000)
+        Assert Equals(exitcode, 0)
+        Assert Equals(job._stdout, [
+              \ "Hello World\r",
+              \ "Hello World\r",
+              \ 'This is not line',
+              \])
+      End
     End
 
     Describe .on_stderr() callback
@@ -142,57 +110,29 @@ Describe System.Job
               \])
       End
 
-      if s:is_windows
-        It is called with raw {data} on Windows (LF)
-          let path = Path.join(root, 'echo.py')
-          let job = Job.start(['python', path, 'stderr', 'lf'], options)
-          let exitcode = job.wait(5000)
-          Assert Equals(exitcode, 0)
-          Assert Equals(job._stderr, [
-                \ "Hello World\r",
-                \ "Hello World\r",
-                \ 'This is not line',
-                \])
-        End
-      else
-        It is called with raw {data} on Unix (LF)
-          let path = Path.join(root, 'echo.py')
-          let job = Job.start(['python', path, 'stderr', 'lf'], options)
-          let exitcode = job.wait(5000)
-          Assert Equals(exitcode, 0)
-          Assert Equals(job._stderr, [
-                \ 'Hello World',
-                \ 'Hello World',
-                \ 'This is not line',
-                \])
-        End
-      endif
+      It is called with raw {data} (LF)
+        let path = Path.join(root, 'echo.py')
+        let job = Job.start(['python', path, 'stderr', 'lf'], options)
+        let exitcode = job.wait(5000)
+        Assert Equals(exitcode, 0)
+        Assert Equals(job._stderr, [
+              \ 'Hello World',
+              \ 'Hello World',
+              \ 'This is not line',
+              \])
+      End
 
-      if s:is_windows
-        It is called with raw {data} (CRLF)
-          let path = Path.join(root, 'echo.py')
-          let job = Job.start(['python', path, 'stderr', 'crlf'], options)
-          let exitcode = job.wait(5000)
-          Assert Equals(exitcode, 0)
-          Assert Equals(job._stderr, [
-                \ "Hello World\r",
-                \ "Hello World\r",
-                \ 'This is not line',
-                \])
-        End
-      else
-        It is called with raw {data} on Unix (CRLF)
-          let path = Path.join(root, 'echo.py')
-          let job = Job.start(['python', path, 'stderr', 'crlf'], options)
-          let exitcode = job.wait(5000)
-          Assert Equals(exitcode, 0)
-          Assert Equals(job._stderr, [
-                \ "Hello World\r",
-                \ "Hello World\r",
-                \ 'This is not line',
-                \])
-        End
-      endif
+      It is called with raw {data} (CRLF)
+        let path = Path.join(root, 'echo.py')
+        let job = Job.start(['python', path, 'stderr', 'crlf'], options)
+        let exitcode = job.wait(5000)
+        Assert Equals(exitcode, 0)
+        Assert Equals(job._stderr, [
+              \ "Hello World\r",
+              \ "Hello World\r",
+              \ 'This is not line',
+              \])
+      End
     End
 
     Describe .on_exit() callback
@@ -260,81 +200,41 @@ Describe System.Job
               \}
       End
 
-      if s:is_windows
-        It sends {data} (String) to the job process on Windows
-          let path = Path.join(root, 'input.py')
-          let job = Job.start(['python', path], options)
-          call job.send("lambdalisue\n")
-          call job.wait()
-          Assert Equals(job.status(), 'dead')
-          Assert Equals(job._stdout, ["Please input your name: Hello lambdalisue\r", ''])
-        End
-      else
-        It sends {data} (String) to the job process on Unix
-          let path = Path.join(root, 'input.py')
-          let job = Job.start(['python', path], options)
-          call job.send("lambdalisue\n")
-          call job.wait()
-          Assert Equals(job.status(), 'dead')
-          Assert Equals(job._stdout, ['Please input your name: Hello lambdalisue', ''])
-        End
-      endif
+      It sends {data} (String) to the job process on Unix
+        let path = Path.join(root, 'input.py')
+        let job = Job.start(['python', path], options)
+        call job.send("lambdalisue\n")
+        call job.wait()
+        Assert Equals(job.status(), 'dead')
+        Assert Equals(job._stdout, ['Please input your name: Hello lambdalisue', ''])
+      End
 
-      if s:is_windows
-        It sends {data} (List) to the job process on Windows
-          let path = Path.join(root, 'read.py')
-          let job = Job.start(['python', path], options)
-          call job.send(['abc', "123\n456", ''])
-          call job.send(['.', ''])
-          call job.wait()
-          Assert Equals(job.status(), 'dead')
-          if has('nvim')
-            Assert Equals(job._stdout, [
-                  \ "read:\r",
-                  \ "abc\r",
-                  \ "123<NUL>456\r",
-                  \ "\r",
-                  \ '',
-                  \])
-          else
-            " Vim cannot send \0
-            Assert Equals(job._stdout, [
-                  \ "read:\r",
-                  \ "abc\r",
-                  \ "123456\r",
-                  \ "\r",
-                  \ '',
-                  \])
-          endif
-        End
-      else
-        It sends {data} (List) to the job process on Unix
-          let path = Path.join(root, 'read.py')
-          let job = Job.start(['python', path], options)
-          call job.send(['abc', "123\n456", ''])
-          call job.send(['.', ''])
-          call job.wait()
-          Assert Equals(job.status(), 'dead')
-          if has('nvim')
-            Assert Equals(job._stdout, [
-                  \ 'read:',
-                  \ 'abc',
-                  \ '123<NUL>456',
-                  \ '',
-                  \ '',
-                  \])
-          else
-            " Vim cannot send \0
-            Assert Equals(job._stdout, [
-                  \ 'read:',
-                  \ 'abc',
-                  \ '123456',
-                  \ '',
-                  \ '',
-                  \])
-          endif
-        End
-      endif
+      It sends {data} (List) to the job process on Unix
+        let path = Path.join(root, 'read.py')
+        let job = Job.start(['python', path], options)
+        call job.send(['abc', "123\n456", ''])
+        call job.send(['.', ''])
+        call job.wait()
+        Assert Equals(job.status(), 'dead')
+        if has('nvim')
+          Assert Equals(job._stdout, [
+                \ 'read:',
+                \ 'abc',
+                \ '123<NUL>456',
+                \ '',
+                \ '',
+                \])
+        else
+          " Vim cannot send \0
+          Assert Equals(job._stdout, [
+                \ 'read:',
+                \ 'abc',
+                \ '123456',
+                \ '',
+                \ '',
+                \])
+        endif
+      End
     End
 
     Describe .stop()

@@ -1,5 +1,3 @@
-let s:newline = has('win32') || has('win64') ? "\r\n" : "\n"
-
 function! s:is_available() abort
   return !has('nvim') && has('patch-8.0.0027')
 endfunction
@@ -32,11 +30,11 @@ function! s:start(args, options) abort
 endfunction
 
 function! s:_out_cb(job, channel, msg) abort
-  call a:job.on_stdout(split(a:msg, s:newline, 1))
+  call a:job.on_stdout(split(a:msg, "\n", 1))
 endfunction
 
 function! s:_err_cb(job, channel, msg) abort
-  call a:job.on_stderr(split(a:msg, s:newline, 1))
+  call a:job.on_stderr(split(a:msg, "\n", 1))
 endfunction
 
 function! s:_close_cb(job, channel) abort
