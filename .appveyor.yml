@@ -44,7 +44,7 @@ install:
   - 'git clone -q --depth 1 --single-branch https://github.com/vim-jp/vital.vim %TEMP%\vital.vim'
   - 'set THEMIS_HOME=%TEMP%\vim-themis'
   - 'set PATH=%THEMIS_HOME%\bin;%PATH%'
-  - 'set PYTHON=C:\Python36\python'
+  - 'set PYTHON3=C:\Python36\python'
   - ps: .ci/windows.ps1
 
 test_script:
