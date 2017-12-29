@@ -4,15 +4,9 @@ function! s:on_stderr(data) abort dict
   endfor
 endfunction
 
-function! s:on_receive_raw(data) abort dict
+function! s:on_receive(data) abort dict
   let self._received[-1] .= a:data[0]
   call extend(self._received, a:data[1:])
-endfunction
-
-function! s:on_receive_text(data) abort dict
-  let data = map(copy(a:data), { k, v -> substitute(v, '\r$', '', '') })
-  let self._received[-1] .= data[0]
-  call extend(self._received, data[1:])
 endfunction
 
 Describe System.Job
@@ -70,89 +64,140 @@ Describe System.Job
 
   Describe An instance
     Describe .on_stdout() callback
-      Before
-        let options = {
-              \ '_received': [''],
-              \ 'on_stdout': function('s:on_receive_raw'),
-              \ 'on_stderr': function('s:on_stderr'),
-              \}
+      Context 'nl' mode
+        Before
+          let options = {
+                \ 'stdout_mode': 'nl',
+                \ '_received': [''],
+                \ 'on_stdout': function('s:on_receive'),
+                \ 'on_stderr': function('s:on_stderr'),
+                \}
+        End
+
+        It is called with raw {data}
+          let path = Path.join(root, 'echo.py')
+          let job = Job.start([python, path, 'stdout'], options)
+          let exitcode = job.wait(5000)
+          Assert Equals(exitcode, 0)
+          Assert Equals(job._received, [
+                \ 'Hello World',
+                \ 'Hello World',
+                \ 'This is not line',
+                \])
+        End
       End
 
-      It is called with raw {data} (CR)
-        let path = Path.join(root, 'echo.py')
-        let job = Job.start([python, path, 'stdout', 'cr'], options)
-        let exitcode = job.wait(5000)
-        Assert Equals(exitcode, 0)
-        Assert Equals(job._received, [
-              \ "Hello World\rHello World\rThis is not line",
-              \])
-      End
+      Context 'raw' mode
+        Before
+          let options = {
+                \ 'stdout_mode': 'raw',
+                \ '_received': [''],
+                \ 'on_stdout': function('s:on_receive'),
+                \ 'on_stderr': function('s:on_stderr'),
+                \}
+        End
 
-      It is called with raw {data} (LF)
-        let path = Path.join(root, 'echo.py')
-        let job = Job.start([python, path, 'stdout', 'lf'], options)
-        let exitcode = job.wait(5000)
-        Assert Equals(exitcode, 0)
-        Assert Equals(job._received, [
-              \ 'Hello World',
-              \ 'Hello World',
-              \ 'This is not line',
-              \])
-      End
+        It is called with raw {data} (CR)
+          let path = Path.join(root, 'echo_raw.py')
+          let job = Job.start([python, path, 'stdout', 'cr'], options)
+          let exitcode = job.wait(5000)
+          Assert Equals(exitcode, 0)
+          Assert Equals(job._received, [
+                \ "Hello World\rHello World\rThis is not line",
+                \])
+        End
 
-      It is called with raw {data} (CRLF)
-        let path = Path.join(root, 'echo.py')
-        let job = Job.start([python, path, 'stdout', 'crlf'], options)
-        let exitcode = job.wait(5000)
-        Assert Equals(exitcode, 0)
-        Assert Equals(job._received, [
-              \ "Hello World\r",
-              \ "Hello World\r",
-              \ 'This is not line',
-              \])
+        It is called with raw {data} (LF)
+          let path = Path.join(root, 'echo_raw.py')
+          let job = Job.start([python, path, 'stdout', 'lf'], options)
+          let exitcode = job.wait(5000)
+          Assert Equals(exitcode, 0)
+          Assert Equals(job._received, [
+                \ 'Hello World',
+                \ 'Hello World',
+                \ 'This is not line',
+                \])
+        End
+
+        It is called with raw {data} (CRLF)
+          let path = Path.join(root, 'echo_raw.py')
+          let job = Job.start([python, path, 'stdout', 'crlf'], options)
+          let exitcode = job.wait(5000)
+          Assert Equals(exitcode, 0)
+          Assert Equals(job._received, [
+                \ "Hello World\r",
+                \ "Hello World\r",
+                \ 'This is not line',
+                \])
+        End
       End
     End
 
     Describe .on_stderr() callback
-      Before
-        let options = {
-              \ '_received': [''],
-              \ 'on_stderr': function('s:on_receive_raw'),
-              \}
+      Context 'nl' mode
+        Before
+          let options = {
+                \ 'stderr_mode': 'nl',
+                \ '_received': [''],
+                \ 'on_stderr': function('s:on_receive'),
+                \}
+        End
+
+        It is called with raw {data}
+          let path = Path.join(root, 'echo.py')
+          let job = Job.start([python, path, 'stderr'], options)
+          let exitcode = job.wait(5000)
+          Assert Equals(exitcode, 0)
+          Assert Equals(job._received, [
+                \ 'Hello World',
+                \ 'Hello World',
+                \ 'This is not line',
+                \])
+        End
       End
 
-      It is called with raw {data} (CR)
-        let path = Path.join(root, 'echo.py')
-        let job = Job.start([python, path, 'stderr', 'cr'], options)
-        let exitcode = job.wait(5000)
-        Assert Equals(exitcode, 0)
-        Assert Equals(job._received, [
-              \ "Hello World\rHello World\rThis is not line",
-              \])
-      End
+      Context 'raw' mode
+        Before
+          let options = {
+                \ 'stderr_mode': 'raw',
+                \ '_received': [''],
+                \ 'on_stderr': function('s:on_receive'),
+                \}
+        End
 
-      It is called with raw {data} (LF)
-        let path = Path.join(root, 'echo.py')
-        let job = Job.start([python, path, 'stderr', 'lf'], options)
-        let exitcode = job.wait(5000)
-        Assert Equals(exitcode, 0)
-        Assert Equals(job._received, [
-              \ 'Hello World',
-              \ 'Hello World',
-              \ 'This is not line',
-              \])
-      End
+        It is called with raw {data} (CR)
+          let path = Path.join(root, 'echo_raw.py')
+          let job = Job.start([python, path, 'stderr', 'cr'], options)
+          let exitcode = job.wait(5000)
+          Assert Equals(exitcode, 0)
+          Assert Equals(job._received, [
+                \ "Hello World\rHello World\rThis is not line",
+                \])
+        End
 
-      It is called with raw {data} (CRLF)
-        let path = Path.join(root, 'echo.py')
-        let job = Job.start([python, path, 'stderr', 'crlf'], options)
-        let exitcode = job.wait(5000)
-        Assert Equals(exitcode, 0)
-        Assert Equals(job._received, [
-              \ "Hello World\r",
-              \ "Hello World\r",
-              \ 'This is not line',
-              \])
+        It is called with raw {data} (LF)
+          let path = Path.join(root, 'echo_raw.py')
+          let job = Job.start([python, path, 'stderr', 'lf'], options)
+          let exitcode = job.wait(5000)
+          Assert Equals(exitcode, 0)
+          Assert Equals(job._received, [
+                \ 'Hello World',
+                \ 'Hello World',
+                \ 'This is not line',
+                \])
+        End
+
+        It is called with raw {data} (CRLF)
+          let path = Path.join(root, 'echo_raw.py')
+          let job = Job.start([python, path, 'stderr', 'crlf'], options)
+          let exitcode = job.wait(5000)
+          Assert Equals(exitcode, 0)
+          Assert Equals(job._received, [
+                \ "Hello World\r",
+                \ "Hello World\r",
+                \ 'This is not line',
+                \])
+        End
       End
     End
 
@@ -225,7 +270,7 @@ Describe System.Job
       Before
         let options = {
               \ '_received': [''],
-              \ 'on_stdout': function('s:on_receive_text'),
+              \ 'on_stdout': function('s:on_receive'),
               \ 'on_stderr': function('s:on_stderr'),
               \}
       End

@@ -1,3 +1,5 @@
+let s:newline = has('win32') || has('win64') ? "\r\n" : "\n"
+
 function! s:is_available() abort
   return !has('nvim') && has('patch-8.0.0027')
 endfunction
@@ -9,12 +11,16 @@ function! s:start(args, options) abort
         \ 'timeout': 0,
         \}
   if has_key(job, 'on_stdout')
-    let job_options.out_cb = function('s:_out_cb', [job])
+    let job_options.out_cb = get(job, 'stdout_mode', 'nl') ==# 'nl'
+          \ ? function('s:_out_cb_nl', [job])
+          \ : function('s:_out_cb_raw', [job])
   else
     let job_options.out_io = 'null'
   endif
   if has_key(job, 'on_stderr')
-    let job_options.err_cb = function('s:_err_cb', [job])
+    let job_options.err_cb = get(job, 'stderr_mode', 'nl') ==# 'nl'
+          \ ? function('s:_err_cb_nl', [job])
+          \ : function('s:_err_cb_raw', [job])
   else
     let job_options.err_io = 'null'
   endif
@@ -29,12 +35,20 @@ function! s:start(args, options) abort
   return job
 endfunction
 
-function! s:_out_cb(job, channel, msg) abort
+function! s:_out_cb_raw(job, channel, msg) abort
   call a:job.on_stdout(split(a:msg, "\n", 1))
 endfunction
 
-function! s:_err_cb(job, channel, msg) abort
+function! s:_err_cb_raw(job, channel, msg) abort
   call a:job.on_stderr(split(a:msg, "\n", 1))
+endfunction
+
+function! s:_out_cb_nl(job, channel, msg) abort
+  call a:job.on_stdout(split(a:msg, s:newline, 1))
+endfunction
+
+function! s:_err_cb_nl(job, channel, msg) abort
+  call a:job.on_stderr(split(a:msg, s:newline, 1))
 endfunction
 
 function! s:_close_cb(job, channel) abort

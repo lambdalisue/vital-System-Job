@@ -2,36 +2,27 @@
 import sys
 import time
 
-# To prevent 'universal newline' in Windows.
-# Open a new stdout/stderr with newline='\n'
 if sys.argv[1] == 'stdout':
-    fo = sys.stdout.buffer
+    fo = sys.stdout
 else:
-    fo = sys.stderr.buffer
+    fo = sys.stderr
 
-if sys.argv[2] == 'cr':
-    newline = b"\r"
-elif sys.argv[2] == 'lf':
-    newline = b"\n"
-else:
-    newline = b"\r\n"
-
-fo.write(b'Hello')
+fo.write('Hello')
 fo.flush()
 time.sleep(0.1)
-fo.write(b' World')
+fo.write(' World')
 fo.flush()
 time.sleep(0.1)
-fo.write(newline)
+fo.write('\n')
 fo.flush()
 time.sleep(0.1)
-fo.write(b'Hello')
+fo.write('Hello')
 fo.flush()
 time.sleep(0.1)
-fo.write(b' World')
+fo.write(' World')
 fo.flush()
 time.sleep(0.1)
-fo.write(newline)
+fo.write('\n')
 fo.flush()
 time.sleep(0.1)
-fo.write(b'This is not line')
+fo.write('This is not line')
