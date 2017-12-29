@@ -27,6 +27,14 @@ environment:
       VIM_ARCH: 64
       PROFILE: .profile
     - VIM: nvim
+      VIM_VERSION: 0.2.1
+      VIM_ARCH: 32
+      PROFILE: .profile
+    - VIM: nvim
+      VIM_VERSION: 0.2.1
+      VIM_ARCH: 64
+      PROFILE: .profile
+    - VIM: nvim
       VIM_VERSION: 0.2.2
       VIM_ARCH: 32
       PROFILE: .profile
