@@ -35,7 +35,7 @@ Describe System.Job
 
   Describe .start({cmd}[, {options}])
     It starts a job with {cmd} and return a job instance
-      let path = Path.join(root, 'echo_stdout.py')
+      let path = Path.join(root, 'echo.py')
       let job = Job.start([python, path])
       Assert KeyExists(job, 'status')
       Assert KeyExists(job, 'wait')
