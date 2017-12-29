@@ -15,9 +15,13 @@ function! s:start(args, options) abort
         \}
   if has_key(job, 'on_stdout')
     let job_options.out_cb = function('s:_out_cb', [job])
+  else
+    let job_options.out_io = 'null'
   endif
   if has_key(job, 'on_stderr')
     let job_options.err_cb = function('s:_err_cb', [job])
+  else
+    let job_options.err_io = 'null'
   endif
   if has_key(job, 'on_stdout') || has_key(job, 'on_stderr')
     let job_options.close_cb = function('s:_close_cb', [job])
@@ -108,6 +112,7 @@ function! s:_job_wait(...) abort dict
   return -1
 endfunction
 
+" To make debug easier, use funcref instead.
 let s:job = {
       \ 'id': function('s:_job_id'),
       \ 'status': function('s:_job_status'),
