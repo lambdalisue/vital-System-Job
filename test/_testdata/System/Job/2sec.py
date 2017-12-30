@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import time
-
-print('This process takes approx. 2 sec')
 time.sleep(2)
-print('Done')

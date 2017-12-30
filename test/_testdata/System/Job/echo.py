@@ -1,28 +1,19 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
+from __future__ import print_function
 import sys
 import time
 
-if sys.argv[1] == 'stdout':
+# Determine stdout/stderr from 1st argument
+if len(sys.argv) <= 1:
     fo = sys.stdout
 else:
-    fo = sys.stderr
+    fo = getattr(sys, sys.argv[1])
 
-fo.write('Hello')
-fo.flush()
+print('Hello World', file=fo)
 time.sleep(0.1)
-fo.write(' World')
-fo.flush()
+
+print('Hello World', file=fo)
 time.sleep(0.1)
-fo.write('\n')
-fo.flush()
-time.sleep(0.1)
-fo.write('Hello')
-fo.flush()
-time.sleep(0.1)
-fo.write(' World')
-fo.flush()
-time.sleep(0.1)
-fo.write('\n')
-fo.flush()
-time.sleep(0.1)
+
 fo.write('This is not line')
+fo.flush()

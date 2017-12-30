@@ -86,15 +86,15 @@ function! s:_job_stop() abort dict
 endfunction
 
 function! s:_job_wait(...) abort dict
+  if self.status() ==# 'dead'
+    return -3
+  endif
   let timeout = a:0 ? a:1 : v:null
   let timeout = timeout is# v:null ? v:null : timeout / 1000.0
   let start_time = reltime()
   try
     while timeout is# v:null || timeout > reltimefloat(reltime(start_time))
-      let status = self.status()
-      if status ==# 'fail'
-        return -3
-      elseif status ==# 'dead'
+      if self.status() ==# 'dead'
         let info = job_info(self.__job)
         return info.exitval
       endif
@@ -102,7 +102,7 @@ function! s:_job_wait(...) abort dict
     endwhile
   catch /^Vim:Interrupt$/
     call self.stop()
-    return 1
+    return -2
   endtry
   return -1
 endfunction
