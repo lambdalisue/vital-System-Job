@@ -147,6 +147,70 @@ Describe System.Job
       End
     End
 
+    Describe .on_stderr() callback
+      Before
+        let options = {
+              \ '_received': [''],
+              \ 'on_stderr': function('s:on_receive'),
+              \}
+      End
+
+      if s:is_windows
+        It is called with {data} (Windows: CRLF)
+          let path = Path.join(root, 'echo.py')
+          let job = Job.start([python, path, 'stderr'], options)
+          Assert Equals(job.wait(5000), 0)
+          Assert Equals(job._received, [
+                \ "Hello World\r",
+                \ "Hello World\r",
+                \ 'This is not line',
+                \])
+        End
+      else
+        It is called with {data} (Unix: LF)
+          let path = Path.join(root, 'echo.py')
+          let job = Job.start([python, path, 'stderr'], options)
+          Assert Equals(job.wait(5000), 0)
+          Assert Equals(job._received, [
+                \ 'Hello World',
+                \ 'Hello World',
+                \ 'This is not line',
+                \])
+        End
+      endif
+
+      It is called with raw {data} (CR)
+        let path = Path.join(root, 'echo_raw.py')
+        let job = Job.start([python, path, 'stderr', "\r"], options)
+        Assert Equals(job.wait(5000), 0)
+        Assert Equals(job._received, [
+              \ "Hello World\rHello World\rThis is not line",
+              \])
+      End
+
+      It is called with raw {data} (LF)
+        let path = Path.join(root, 'echo_raw.py')
+        let job = Job.start([python, path, 'stderr', "\n"], options)
+        Assert Equals(job.wait(5000), 0)
+        Assert Equals(job._received, [
+              \ 'Hello World',
+              \ 'Hello World',
+              \ 'This is not line',
+              \])
+      End
+
+      It is called with raw {data} (CRLF)
+        let path = Path.join(root, 'echo_raw.py')
+        let job = Job.start([python, path, 'stderr', "\r\n"], options)
+        Assert Equals(job.wait(5000), 0)
+        Assert Equals(job._received, [
+              \ "Hello World\r",
+              \ "Hello World\r",
+              \ 'This is not line',
+              \])
+      End
+    End
+
     Describe .on_exit() callback
       Before
         function! s:on_exit(exitcode) abort dict
