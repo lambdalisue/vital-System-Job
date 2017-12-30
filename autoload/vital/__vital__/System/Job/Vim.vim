@@ -1,5 +1,3 @@
-let s:is_windows = has('win32') || has('win64')
-
 function! s:is_available() abort
   return !has('nvim') && has('patch-8.0.0027')
 endfunction
@@ -11,16 +9,12 @@ function! s:start(args, options) abort
         \ 'timeout': 0,
         \}
   if has_key(job, 'on_stdout')
-    let job_options.out_cb = get(job, 'stdout_mode', 'nl') ==# 'nl'
-          \ ? function('s:_out_cb_nl', [job])
-          \ : function('s:_out_cb_raw', [job])
+    let job_options.out_cb = function('s:_out_cb', [job])
   else
     let job_options.out_io = 'null'
   endif
   if has_key(job, 'on_stderr')
-    let job_options.err_cb = get(job, 'stderr_mode', 'nl') ==# 'nl'
-          \ ? function('s:_err_cb_nl', [job])
-          \ : function('s:_err_cb_raw', [job])
+    let job_options.err_cb = function('s:_err_cb', [job])
   else
     let job_options.err_io = 'null'
   endif
@@ -35,57 +29,25 @@ function! s:start(args, options) abort
   return job
 endfunction
 
-function! s:_out_cb_raw(job, channel, msg) abort
+function! s:_out_cb(job, channel, msg) abort
   call a:job.on_stdout(split(a:msg, "\n", 1))
 endfunction
 
-function! s:_err_cb_raw(job, channel, msg) abort
+function! s:_err_cb(job, channel, msg) abort
   call a:job.on_stderr(split(a:msg, "\n", 1))
 endfunction
-
-if s:is_windows
-  function! s:_out_cb_nl(job, channel, msg) abort
-    let data = map(
-          \ split(a:msg, "\n", 1),
-          \ 'v:val[-1:] ==# "\r" ? v:val[:-2] : v:val'
-          \)
-    call a:job.on_stdout(data)
-  endfunction
-
-  function! s:_err_cb_nl(job, channel, msg) abort
-    let data = map(
-          \ split(a:msg, "\n", 1),
-          \ 'v:val[-1:] ==# "\r" ? v:val[:-2] : v:val'
-          \)
-    call a:job.on_stderr(data)
-  endfunction
-else
-  function! s:_out_cb_nl(job, channel, msg) abort
-    call a:job.on_stdout(split(a:msg, "\n", 1))
-  endfunction
-
-  function! s:_err_cb_nl(job, channel, msg) abort
-    call a:job.on_stderr(split(a:msg, "\n", 1))
-  endfunction
-endif
 
 function! s:_close_cb(job, channel) abort
   if has_key(a:job, 'on_stdout')
     let options = {'part': 'out'}
-    let l:Out_cb = get(a:job, 'stdout_mode', 'nl') ==# 'nl'
-          \ ? function('s:_out_cb_nl')
-          \ : function('s:_out_cb_raw')
     while ch_status(a:channel, options) ==# 'buffered'
-      call Out_cb(a:job, a:channel, ch_readraw(a:channel, options))
+      call s:_out_cb(a:job, a:channel, ch_readraw(a:channel, options))
     endwhile
   endif
   if has_key(a:job, 'on_stderr')
     let options = {'part': 'err'}
-    let l:Err_cb = get(a:job, 'stderr_mode', 'nl') ==# 'nl'
-          \ ? function('s:_err_cb_nl')
-          \ : function('s:_err_cb_raw')
     while ch_status(a:channel, options) ==# 'buffered'
-      call Err_cb(a:job, a:channel, ch_readraw(a:channel, options))
+      call s:_err_cb(a:job, a:channel, ch_readraw(a:channel, options))
     endwhile
   endif
 endfunction
