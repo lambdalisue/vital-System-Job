@@ -46,9 +46,9 @@ Describe System.Job
             \}
     End
 
-    It starts a job with {cmd} and return a job instance
+    It starts a job with {cmd} (List) and return a job instance
       let path = Path.join(root, '2sec.py')
-      let job = Job.start([python, path, 'stdout', 'lf'], options)
+      let job = Job.start([python, path], options)
       Assert KeyExists(job, 'status')
       Assert KeyExists(job, 'wait')
       Assert KeyExists(job, 'send')
@@ -57,8 +57,19 @@ Describe System.Job
       call job.wait()
     End
 
-    It throws an exception when {args} is not a List instance
-      Throws /Argument requires to be a List instance/ Job.start(python)
+    It starts a job with {cmd} (String) and return a job instance
+      let path = Path.join(root, '2sec.py')
+      let job = Job.start(printf('%s %s', python, path), options)
+      Assert KeyExists(job, 'status')
+      Assert KeyExists(job, 'wait')
+      Assert KeyExists(job, 'send')
+      Assert KeyExists(job, 'stop')
+      call job.stop()
+      call job.wait()
+    End
+
+    It throws an exception when {args} is not a String nor List instance
+      Throws /Argument requires to be a String or List instance/ Job.start({})
     End
 
     It throws an exception when {args} is an empty list
