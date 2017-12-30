@@ -43,8 +43,7 @@ install:
   - 'git clone -q --depth 1 --single-branch https://github.com/thinca/vim-themis %TEMP%\vim-themis'
   - 'git clone -q --depth 1 --single-branch https://github.com/vim-jp/vital.vim %TEMP%\vital.vim'
   - 'set THEMIS_HOME=%TEMP%\vim-themis'
-  - 'set PATH=%THEMIS_HOME%\bin;%PATH%'
-  - 'set PYTHON3=C:\Python36\python'
+  - 'set PATH=C:\Python36;C:\Python36\Scripts;%THEMIS_HOME%\bin;%PATH%'
   - ps: .ci/windows.ps1
 
 test_script:
@@ -57,7 +56,6 @@ test_script:
   - 'themis --reporter dot --runtimepath %TEMP%\vital.vim'
 
 after_test:
-  - "SET PATH=C:\\Python34;C:\\Python34\\Scripts;%PATH%"
   - pip3 install codecov
   - pip3 install covimerage
   - if exist %PROFILE% (covimerage write_coverage %PROFILE% & coverage xml & codecov -f coverage.xml)
