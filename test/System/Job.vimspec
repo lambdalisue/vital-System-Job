@@ -1,7 +1,5 @@
 let s:is_windows = has('win32') || has('win64')
 
-let $PATH = 'C:\Python27;' . $PATH
-
 function! s:on_stderr(data) abort dict
   let data = filter(
         \ map(a:data, 'substitute(v:val, ''^\s\+\|\s\+$'', '''', ''g'')'),
@@ -25,6 +23,7 @@ endfunction
 
 Describe System.Job
   Before all
+    let python = executable('python3') ? 'python3' : 'python'
     let Job = vital#vital#import('System.Job')
     let Path = vital#vital#import('System.Filepath')
     let root = Path.realpath('test/_testdata/System/Job')
@@ -49,7 +48,7 @@ Describe System.Job
 
     It starts a job with {cmd} (List) and return a job instance
       let path = Path.join(root, '2sec.py')
-      let job = Job.start(['python', path], options)
+      let job = Job.start([python, path], options)
       Assert KeyExists(job, 'status')
       Assert KeyExists(job, 'wait')
       Assert KeyExists(job, 'send')
@@ -95,7 +94,7 @@ Describe System.Job
       if s:is_windows
         It is called with {data} (Windows: CRLF)
           let path = Path.join(root, 'echo.py')
-          let job = Job.start(['python', path, 'stdout'], options)
+          let job = Job.start([python, path, 'stdout'], options)
           Assert Equals(job.wait(5000), 0)
           Assert Equals(job._received, [
                 \ "Hello World\r",
@@ -106,7 +105,7 @@ Describe System.Job
       else
         It is called with {data} (Unix: LF)
           let path = Path.join(root, 'echo.py')
-          let job = Job.start(['python', path, 'stdout'], options)
+          let job = Job.start([python, path, 'stdout'], options)
           Assert Equals(job.wait(5000), 0)
           Assert Equals(job._received, [
                 \ 'Hello World',
@@ -118,7 +117,7 @@ Describe System.Job
 
       It is called with raw {data} (CR)
         let path = Path.join(root, 'echo_raw.py')
-        let job = Job.start(['python', path, 'stdout', "\r"], options)
+        let job = Job.start([python, path, 'stdout', "\r"], options)
         Assert Equals(job.wait(5000), 0)
         Assert Equals(job._received, [
               \ "Hello World\rHello World\rThis is not line",
@@ -127,7 +126,7 @@ Describe System.Job
 
       It is called with raw {data} (LF)
         let path = Path.join(root, 'echo_raw.py')
-        let job = Job.start(['python', path, 'stdout', "\n"], options)
+        let job = Job.start([python, path, 'stdout', "\n"], options)
         Assert Equals(job.wait(5000), 0)
         Assert Equals(job._received, [
               \ 'Hello World',
@@ -138,7 +137,7 @@ Describe System.Job
 
       It is called with raw {data} (CRLF)
         let path = Path.join(root, 'echo_raw.py')
-        let job = Job.start(['python', path, 'stdout', "\r\n"], options)
+        let job = Job.start([python, path, 'stdout', "\r\n"], options)
         Assert Equals(job.wait(5000), 0)
         Assert Equals(job._received, [
               \ "Hello World\r",
@@ -163,15 +162,15 @@ Describe System.Job
 
       It is called with an exitcode
         let path = Path.join(root, 'exitval.py')
-        let job = Job.start(['python', path, '0'], options)
+        let job = Job.start([python, path, '0'], options)
         Assert Equals(job.wait(5000), 0)
         Assert Equals(job._exitcode, [0])
 
-        let job = Job.start(['python', path, '1'], options)
+        let job = Job.start([python, path, '1'], options)
         Assert Equals(job.wait(5000), 1)
         Assert Equals(job._exitcode, [0, 1])
 
-        let job = Job.start(['python', path, '2'], options)
+        let job = Job.start([python, path, '2'], options)
         Assert Equals(job.wait(5000), 2)
         Assert Equals(job._exitcode, [0, 1, 2])
       End
@@ -186,8 +185,8 @@ Describe System.Job
 
       It returns a unique number for individual process
         let path = Path.join(root, 'infinity_loop.py')
-        let job1 = Job.start(['python', path], options)
-        let job2 = Job.start(['python', path], options)
+        let job1 = Job.start([python, path], options)
+        let job2 = Job.start([python, path], options)
         Assert IsNumber(job1.id())
         Assert IsNumber(job2.id())
         Assert NotEqual(job1.id(), job2.id())
@@ -207,7 +206,7 @@ Describe System.Job
 
       It returns 'run' and 'dead' when the job alive or dead respectively
         let path = Path.join(root, 'infinity_loop.py')
-        let job = Job.start(['python', path], options)
+        let job = Job.start([python, path], options)
         Assert Equals(job.status(), 'run')
         call job.stop()
         call job.wait(5000)
@@ -226,7 +225,7 @@ Describe System.Job
 
       It sends {data} (String) to the job process on Unix
         let path = Path.join(root, 'input.py')
-        let job = Job.start(['python', path], options)
+        let job = Job.start([python, path], options)
         call job.send("lambdalisue\n")
         Assert Equals(job.wait(5000), 0)
         Assert Equals(job.status(), 'dead')
@@ -235,7 +234,7 @@ Describe System.Job
 
       It sends {data} (List) to the job process on Unix
         let path = Path.join(root, 'read.py')
-        let job = Job.start(['python', path], options)
+        let job = Job.start([python, path], options)
         call job.send(['abc', "123\n456", ''])
         call job.send(['.', ''])
         Assert Equals(job.wait(5000), 0)
@@ -270,7 +269,7 @@ Describe System.Job
 
       It stop a job which is running
         let path = Path.join(root, 'infinity_loop.py')
-        let job = Job.start(['python', path], options)
+        let job = Job.start([python, path], options)
         Assert Equals(job.status(), 'run')
         call job.stop()
         Assert Equals(job.wait(5000), -3)
@@ -289,7 +288,7 @@ Describe System.Job
 
       It waits a job to terminate
         let path = Path.join(root, '2sec.py')
-        let job = Job.start(['python', path], options)
+        let job = Job.start([python, path], options)
         let start = reltime()
         let status = job.wait()
         let delta = reltime(start)
@@ -300,19 +299,19 @@ Describe System.Job
 
       It returns an exit status when the job has terminated
         let path = Path.join(root, 'exitval.py')
-        let job = Job.start(['python', path, '0'], options)
+        let job = Job.start([python, path, '0'], options)
         Assert Equals(job.wait(5000), 0)
 
-        let job = Job.start(['python', path, '1'], options)
+        let job = Job.start([python, path, '1'], options)
         Assert Equals(job.wait(5000), 1)
 
-        let job = Job.start(['python', path, '2'], options)
+        let job = Job.start([python, path, '2'], options)
         Assert Equals(job.wait(5000), 2)
       End
 
       It returns -1 when the job did not terminate within {timeout}
         let script = Path.join(root, 'infinity_loop.py')
-        let job = Job.start(['python', script], options)
+        let job = Job.start([python, script], options)
         let start = reltime()
         let status = job.wait(10)
         let delta = reltime(start)
@@ -327,7 +326,7 @@ Describe System.Job
 
       It returns -3 when the job has already been terminated
         let script = Path.join(root, 'infinity_loop.py')
-        let job = Job.start(['python', script], options)
+        let job = Job.start([python, script], options)
         call job.stop()
         Assert Equals(job.status(), 'dead')
         Assert Equals(job.wait(5000), -3)
