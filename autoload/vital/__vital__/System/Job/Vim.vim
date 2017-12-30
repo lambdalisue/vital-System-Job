@@ -78,9 +78,6 @@ function! s:_job_send(data) abort dict
   let data = type(a:data) == v:t_list
         \ ? join(map(a:data, 'substitute(v:val, "\n", '''', ''g'')'), "\n")
         \ : a:data
-  if has('win32') || has('win64')
-    let data = substitute(data, "\n", "\r\n", 'g')
-  endif
   return ch_sendraw(self.__job, data)
 endfunction
 
