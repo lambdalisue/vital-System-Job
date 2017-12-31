@@ -386,14 +386,6 @@ Describe System.Job
         call job.stop()
         call job.wait(5000)
       End
-
-      It returns -1 when a job has interrupted
-        let script = Path.join(root, 'infinity_loop.py')
-        let job = Job.start([python, script], options)
-        call job.stop()
-        Assert Equals(job.wait(5000), -1)
-        Assert Equals(job.status(), 'dead')
-      End
     End
   End
 End

@@ -207,5 +207,11 @@ wait([{timeout}])
 	The unit of {timeout} is milliseconds.
 	When user hit <C-c>, the process will terminate.
 
+	Note that Vim and Neovim return different exitval on different OS
+	when |Vital.System.Job-instance.stop()| has called prior to this
+	method.
+	So developers should avoid checking the return status when they
+	called |Vital.System.Job-instance.stop()|.
+
 =============================================================================
 vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl

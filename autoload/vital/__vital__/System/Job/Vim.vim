@@ -62,7 +62,7 @@ endfunction
 
 " Instance -------------------------------------------------------------------
 function! s:_job_id() abort dict
-  return str2nr(matchstr(string(self.__job), '^process \zs\d\+\ze'))
+  return job_info(self.__job).process
 endfunction
 
 " NOTE:

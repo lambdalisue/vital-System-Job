@@ -60,7 +60,6 @@ endfunction
 
 function! s:_job_stop() abort dict
   try
-    let self.__exitval = -1
     call jobstop(self.__job)
   catch /^Vim\%((\a\+)\)\=:E900/
     " NOTE:
