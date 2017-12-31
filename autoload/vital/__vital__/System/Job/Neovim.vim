@@ -14,8 +14,11 @@ function! s:start(args, options) abort
   endif
   if has_key(job, 'on_exit')
     let job_options.on_exit = function('s:_on_exit', [job])
+  else
+    let job_options.on_exit = function('s:_on_exit_raw', [job])
   endif
   let job.__job = jobstart(a:args, job_options)
+  let job.__exitval = v:null
   let job.args = a:args
   return job
 endfunction
@@ -28,8 +31,13 @@ function! s:_on_stderr(job, job_id, data, event) abort
   call a:job.on_stderr(a:data)
 endfunction
 
-function! s:_on_exit(job, job_id, data, event) abort
-  call a:job.on_exit(a:data)
+function! s:_on_exit(job, job_id, exitval, event) abort
+  let a:job.__exitval = a:exitval
+  call a:job.on_exit(a:exitval)
+endfunction
+
+function! s:_on_exit_raw(job, job_id, exitval, event) abort
+  let a:job.__exitval = a:exitval
 endfunction
 
 " Instance -------------------------------------------------------------------
@@ -52,6 +60,7 @@ endfunction
 
 function! s:_job_stop() abort dict
   try
+    let self.__exitval = -1
     call jobstop(self.__job)
   catch /^Vim\%((\a\+)\)\=:E900/
     " NOTE:
@@ -62,11 +71,17 @@ endfunction
 
 function! s:_job_wait(...) abort dict
   let timeout = a:0 ? a:1 : v:null
-  if timeout is# v:null
-    return jobwait([self.__job])[0]
-  else
-    return jobwait([self.__job], timeout)[0]
+  let exitval = timeout is# v:null
+        \ ? jobwait([self.__job])[0]
+        \ : jobwait([self.__job], timeout)[0]
+  if exitval != -3
+    return exitval
   endif
+  " Wait until 'on_exit' callback is called
+  while self.__exitval is# v:null
+    sleep 1m
+  endwhile
+  return self.__exitval
 endfunction
 
 " To make debug easier, use funcref instead.

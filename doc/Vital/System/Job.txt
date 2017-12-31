@@ -200,10 +200,10 @@ stop()
 					*Vital.System.Job-instance.wait()*
 wait([{timeout}])
 	Wait until the process has terminated or {timeout} has passed.
-	It returns the exit status of the process or
+	It immediately returns an exit status if the process has terminated.
+	Otherwise it waits the process and returns an exit status or
 	-1	The timeout has passed
 	-2	The process is interrupted
-	-3	The process has been terminated (invalid)
 	The unit of {timeout} is milliseconds.
 	When user hit <C-c>, the process will terminate.
 

@@ -90,17 +90,15 @@ function! s:_job_stop() abort dict
 endfunction
 
 function! s:_job_wait(...) abort dict
-  if self.status() ==# 'dead'
-    return -3
-  endif
   let timeout = a:0 ? a:1 : v:null
   let timeout = timeout is# v:null ? v:null : timeout / 1000.0
   let start_time = reltime()
+  let job = self.__job
   try
     while timeout is# v:null || timeout > reltimefloat(reltime(start_time))
-      if self.status() ==# 'dead'
-        let info = job_info(self.__job)
-        return info.exitval
+      let status = job_status(job)
+      if status !=# 'run'
+        return status ==# 'dead' ? job_info(job).exitval : -3
       endif
       sleep 1m
     endwhile
