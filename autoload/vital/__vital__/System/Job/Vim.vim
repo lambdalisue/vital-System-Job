@@ -86,7 +86,7 @@ endfunction
 
 function! s:_job_stop() abort dict
   call job_stop(self.__job)
-  call timer_start(s:KILL_TIMEOUT_MS, { -> job_stop(a:job, 'kill') })
+  call timer_start(s:KILL_TIMEOUT_MS, { -> job_stop(self.__job, 'kill') })
 endfunction
 
 function! s:_job_wait(...) abort dict
