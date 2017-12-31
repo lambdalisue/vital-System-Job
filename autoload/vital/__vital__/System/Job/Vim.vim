@@ -1,3 +1,6 @@
+" https://github.com/neovim/neovim/blob/f629f83/src/nvim/event/process.c#L24-L26
+let s:KILL_TIMEOUT_MS = 2000
+
 function! s:is_available() abort
   return !has('nvim') && has('patch-8.0.0027')
 endfunction
@@ -82,7 +85,8 @@ function! s:_job_send(data) abort dict
 endfunction
 
 function! s:_job_stop() abort dict
-  return job_stop(self.__job)
+  call job_stop(self.__job)
+  call timer_start(s:KILL_TIMEOUT_MS, { -> job_stop(a:job, 'kill') })
 endfunction
 
 function! s:_job_wait(...) abort dict
