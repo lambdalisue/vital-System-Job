@@ -1,6 +1,6 @@
 " http://vim-jp.org/blog/2016/03/23/take-care-of-patch-1577.html
 function! s:is_available() abort
-  return has('nvim') && has('patch-7.4.1646')
+  return has('nvim') && has('nvim-0.2.0')
 endfunction
 
 function! s:start(args, options) abort

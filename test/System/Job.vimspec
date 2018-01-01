@@ -36,7 +36,7 @@ Describe System.Job
 
   Before
     if !Job.is_available()
-      Skip System.Job requires Neovim with patch-7.4.1646 or Vim with patch-8.0.0027
+      Skip System.Job requires Neovim 0.2.0 or Vim with patch-8.0.0027
     endif
 
     let options = {
@@ -58,7 +58,7 @@ Describe System.Job
 
     It starts a job with {cmd} (String) and return a job instance
       let path = Path.join(root, '2sec.py')
-      let job = Job.start(printf('python %s', path), options)
+      let job = Job.start(printf('%s %s', python, path), options)
       Assert KeyExists(job, 'status')
       Assert KeyExists(job, 'wait')
       Assert KeyExists(job, 'send')
