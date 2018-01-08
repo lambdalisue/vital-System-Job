@@ -3,7 +3,7 @@
 Version: 0.1.0-dev
 Author:  Alisue <lambdalisue@hashnote.net>
 License: MIT license
-Support: Vim 8.0.0027 and above
+Support: Vim 8.0.0027 and above (prefer 8.0.0107 and above)
 Support: Neovim 0.2.0 and above
 
 
@@ -24,6 +24,11 @@ INTRODUCTION					*Vital.System.Job-introduction*
 *Vital.System.Job* is a module to provide a way to use a job feature of Vim
 and Neovim so that developers of Vim plugins do not need to write separate
 codes for Vim and Neovim.
+
+Note that prior to Vim 8.0.0027, |Vital.System.Job-instance.wait()| method
+enter infinity-loop so this library does not support.
+Note that prior to Vim 8.0.0107, the channel handling was different so
+it would have performance issues.
 
 
 =============================================================================
@@ -65,7 +70,7 @@ the instance attribute.
 <
 Note that this module DO NOT change the handling of "data" by operating
 system, mean that you may need to normalize "\r" which may appear on each
-end of line in Windows.
+end of line in Windows. See |Vital.System.Job-callbacks| for detail.
 
 -----------------------------------------------------------------------------
 CALLBACKS      					|Vital.System.Job-callbacks|
@@ -104,6 +109,11 @@ code in |Vital.System.Job-usage|.
 If you need it in synchronous way, use |Vital.System.Job-instance.wait()| 
 method.
 
+Note that "on_stdout" and/or "on_stderr" callbacks will be called prior to
+the "on_exit" callback if defined. So "on_exit" timing is a bit different
+from "exit_cb" in Vim 8 while this library waits "close_cb" when "on_stdout"
+and/or "on_stderr" are defined.
+
 -----------------------------------------------------------------------------
 PROMISE      					|Vital.System.Job-promise|
 
@@ -138,10 +148,15 @@ Neovim.
 	      \.then({ result -> execute('echo ' . string(result), '') })
 	      \.catch({ result -> execute('echo ' . string(result), '') })
 
+
 =============================================================================
 FUNCTION					*Vital.System.Job-function*
 
-						*Vital.System.Job.start()*
+					*Vital.System.Job.is_available()*
+is_available()
+	Return 1 if this library is available on current Vim session.
+
+					*Vital.System.Job.start()*
 start({args}[, {options}])
 	Start a new process and return a job instance.
 
@@ -195,11 +210,21 @@ send({data})
 <
 					*Vital.System.Job-instance.stop()*
 stop()
-	Send STOP single to terminate the process.
+	Stop the process by sending SIGTERM. If the process does not
+	terminate after a timeout then SIGKILL will be sent.
+	Note that the above "timeout" is
+	
+	- 2000 ms in Vim (defined in System.Job.Vim)
+	- 2000 ms in Neovim (defined in src/nvim/event/process.c)
+
+	While "timeout" in Neovim is defined in it's C code, it might be
+	changed in the future so developers should not rely on the value.
 
 					*Vital.System.Job-instance.wait()*
 wait([{timeout}])
 	Wait until the process has terminated or {timeout} has passed.
+	If {timeout} is v:null (default), it waits forever until the process
+	has terminated.
 	It immediately returns an exit status if the process has terminated.
 	Otherwise it waits the process and returns an exit status or
 	-1	The timeout has passed
@@ -212,6 +237,7 @@ wait([{timeout}])
 	method.
 	So developers should avoid checking the return status when they
 	called |Vital.System.Job-instance.stop()|.
+
 
 =============================================================================
 vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl
