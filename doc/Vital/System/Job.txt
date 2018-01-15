@@ -83,7 +83,7 @@ be received as
 
 	1. ["Hello", "Good", "Bye", ""]
 	2. ["Hello", ""], ["Good", ""], and ["Bye", ""]
-	3. ["Hello", "Go"], ["od", "Bye"], and [""]
+	3. ["Hello", "Go"], ["od", "Bye"], and ["", ""]
 
 To normalize the data, see an example code in |Vital.System.Job-usage|.
 
