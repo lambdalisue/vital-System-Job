@@ -208,6 +208,13 @@ send({data})
 	call job.send(['abc', '123\n456', ''])
 	" -> send: abc\n123\045\n (Vim: abc\n123456\n)
 <
+					*Vital.System.Job-instance.close()*
+close()
+	Close "stdin" channel/stream of the process. In other word, it sends
+	EOF to the process (e.g. "cat" command in Linux requires EOF.)
+
+	Note that once "stdin" has closed, there is no way to re-open.
+
 					*Vital.System.Job-instance.stop()*
 stop()
 	Stop the process by sending SIGTERM. If the process does not

@@ -316,6 +316,38 @@ Describe System.Job
       End
     End
 
+    Describe .close()
+      Before
+        let options = extend(options, {
+              \ '_received': [''],
+              \ 'on_stdout': function('s:on_receive_text'),
+              \})
+      End
+
+      It sends EOF (close stdin) to a job
+        let path = Path.join(root, 'cat.py')
+        let job = Job.start([python, path], options)
+        call job.send("Hello\n")
+        call job.send("Darkness\n")
+        call job.send("My\n")
+        call job.send("Old\n")
+        call job.send("Friend\n")
+        " EOF has not been sent so the following should be timeout
+        Assert Equals(job.wait(5000), -1)
+        Assert Equals(job._received, [''])
+        call job.close()
+        Assert Equals(job.wait(5000), 0)
+        Assert Equals(job._received, [
+              \ 'IN: Hello',
+              \ 'IN: Darkness',
+              \ 'IN: My',
+              \ 'IN: Old',
+              \ 'IN: Friend',
+              \ '',
+              \])
+      End
+    End
+
     Describe .stop()
       It stop a job which is running
         let path = Path.join(root, 'infinity_loop.py')

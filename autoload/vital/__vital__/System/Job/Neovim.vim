@@ -58,6 +58,10 @@ function! s:_job_send(data) abort dict
   return jobsend(self.__job, a:data)
 endfunction
 
+function! s:_job_close() abort dict
+  call jobclose(self.__job, 'stdin')
+endfunction
+
 function! s:_job_stop() abort dict
   try
     call jobstop(self.__job)
@@ -88,6 +92,7 @@ let s:job = {
       \ 'id': function('s:_job_id'),
       \ 'status': function('s:_job_status'),
       \ 'send': function('s:_job_send'),
+      \ 'close': function('s:_job_close'),
       \ 'stop': function('s:_job_stop'),
       \ 'wait': function('s:_job_wait'),
       \}
